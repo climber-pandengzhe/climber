@@ -1,0 +1,5 @@
+eureka 用以服务发现、服务注册，比较流行的有consul，Eureka 主要包括：
+1、Eureka Server：提供服务注册和发现。
+2、Service Provider ：服务提供方 将自身服务注册到Eureka，从而使服务消费方能够找到。
+3、Service Consumer： 服务消费方 从Eureka获取注册服务列表，从而能够消费服务
+
