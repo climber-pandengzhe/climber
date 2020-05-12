@@ -25,6 +25,7 @@ public class VisibleTest {
             System.out.println("更改数据i:"+test.i);
         }).start();
         while(test.i==0){
+
         }
         System.out.println("更改后的数据i="+test.i);
     }
