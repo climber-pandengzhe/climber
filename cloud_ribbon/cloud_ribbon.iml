@@ -143,6 +143,7 @@
     <orderEntry type="library" name="Maven: org.aspectj:aspectjweaver:1.8.13" level="project" />
     <orderEntry type="library" name="Maven: io.reactivex:rxjava-reactive-streams:1.2.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.reactivestreams:reactive-streams:1.0.2" level="project" />
+    <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.18.8" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.springframework.boot:spring-boot-starter-test:2.0.5.RELEASE" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.springframework.boot:spring-boot-test:2.0.5.RELEASE" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.springframework.boot:spring-boot-test-autoconfigure:2.0.5.RELEASE" level="project" />
