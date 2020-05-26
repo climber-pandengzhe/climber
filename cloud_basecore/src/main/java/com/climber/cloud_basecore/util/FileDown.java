@@ -2,7 +2,12 @@ package com.climber.cloud_basecore.util;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
+import javax.xml.crypto.Data;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,9 +17,21 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
+import static com.climber.cloud_basecore.util.ExcelTest.excelName;
+
 public class FileDown {
+
+
+
+
+    public static Map<String,String> identityAndNamsMap= new HashMap<>();
+
 	/**
 	 * 说明：根据指定URL将文件下载到指定目标位置
 	 *
@@ -23,10 +40,13 @@ public class FileDown {
 	 * @param downloadDir
 	 *            文件存放目录
 	 * @return 返回下载文件
+     *
+     *
 	 */
 	@SuppressWarnings("finally")
 	public static File downloadFile(String urlPath, String downloadDir, Integer countNum) {
 		File file = null;
+        String urlError="";
 		try {
 			String[] strings=new String[1];
 			// 统一资源
@@ -37,7 +57,11 @@ public class FileDown {
 				strings[0]=urlPath;
 			}
 			int num=0;
+			String 	identity="";
+			String xyDocumentName="";
+
 			for(String urlTemp:strings){
+                urlError=urlTemp;
 				num++;
 				URL url = new URL(urlTemp);
 				// 连接类的父类，抽象类
@@ -80,22 +104,36 @@ public class FileDown {
 				while ((size = bin.read(buf)) != -1) {
 					len += size;
 					out.write(buf, 0, size);
-					// 控制台打印文件下载的百分比情况
-					//System.out.println("下载了-------> " + len * 100 / fileLength + "%\n");
 				}
 				// 关闭资源
 				bin.close();
 				out.close();
-			//	System.out.println("文件下载成功！");
-				String 	identity = dealPdf(file);
-				String pathNew = downloadDir + File.separatorChar + "商户号_"+countNum+"_"+num+"_"+identity+".pdf";
+
+
+				identity = dealPdf(file);
+				if(xyDocumentName==""){
+					xyDocumentName= excelName+"_"+String.format("%08d", countNum) +"_"+String.format("%02d", num) +".pdf";
+				}else{
+					xyDocumentName =xyDocumentName +";"+excelName+"_"+String.format("%08d", countNum) +"_"+String.format("%02d", num) +".pdf";
+				}
+
+				String pathNew = downloadDir + File.separatorChar + excelName+"_"+String.format("%08d", countNum) +"_"+String.format("%02d", num)+".pdf";
 				file.renameTo(new File(pathNew));
 
 			}
 
+            if(countNum%100==0){
+                System.out.println("已经下载了"+countNum+"条数据"+ LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+            }
+
+
+			//写入map
+            identityAndNamsMap.put(identity,xyDocumentName);
+
 
 
 		} catch (MalformedURLException e) {
+            System.out.println("出错的url"+urlError);
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -136,6 +174,77 @@ public class FileDown {
 			return "--";
 		}
 	}
+
+
+	public  static void writeQingDanList(String shanghuhao) throws IOException {
+
+        Iterator<Map.Entry<String, String>> iterator = identityAndNamsMap.entrySet().iterator();
+
+        OutputStream outputStream = null;
+        SXSSFWorkbook wb = new SXSSFWorkbook();
+        try {
+            System.out.println("执行中...");
+            //获取开始时间
+            long startTime=System.currentTimeMillis();
+
+            Sheet sheet = wb.createSheet("sheet1");
+            Row row = null;
+            Cell cell = null;
+            row = sheet.createRow(0);
+            cell = row.createCell(0);
+            cell.setCellValue("身份证号");
+            cell = row.createCell(1);
+            cell.setCellValue("商户订单号");
+            cell = row.createCell(2);
+            cell.setCellValue("协议文件编号");
+
+
+            int  rowNo=0;
+            while (iterator.hasNext()){
+                rowNo++;
+                Map.Entry<String, String> next = iterator.next();
+                row = sheet.createRow(rowNo);
+                cell = row.createCell(0);
+                cell.setCellValue(next.getKey());
+
+                cell = row.createCell(1);
+                cell.setCellValue(shanghuhao);
+
+                cell = row.createCell(2);
+                cell.setCellValue(next.getValue());
+            }
+
+
+            String path ="/Users/zhoushengqiang/Desktop/dkxy/"+excelName+"_扣款协议清单.xlsx";
+            File file = new File(path);
+            if(!file.exists()){
+                file.createNewFile();
+            }
+            outputStream = new FileOutputStream(new File(path));
+            wb.write(outputStream);
+            outputStream.flush();
+            long end=System.currentTimeMillis();
+            System.out.println("写Excel清单耗时:"+(end-startTime)/1000+"秒");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if(wb!=null){
+                    wb.close();
+                }
+                if(outputStream != null) {
+                    outputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }
+
+
 
 	/**
 	 * 测试

@@ -4,14 +4,16 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -19,25 +21,31 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelTest {
 
-    public static Map<String,String> map= new HashMap<>();
+    public static AtomicInteger rowNo= new AtomicInteger(0);
+
+    public static Map<String,String> userIdAndUrlsMap = new HashMap<>();
+    public static String excelName="684454";
+
 
     public static ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
             .setNameFormat("demo-pool-%d").build();
-    public static  ExecutorService threadPoolExecutor = new ThreadPoolExecutor(10, 10,
+    public static  ExecutorService threadPoolExecutor = new ThreadPoolExecutor(17, 17,
             3000L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>(3000), namedThreadFactory);
+            new LinkedBlockingQueue<Runnable>(3000000), namedThreadFactory);
 
 
-    public static        ExecutorService threadPoolExecutor2 = new ThreadPoolExecutor(10, 10,
-                    60L, TimeUnit.SECONDS,
-                    new SynchronousQueue<Runnable>());
+//    public static        ExecutorService threadPoolExecutor2 = new ThreadPoolExecutor(10, 10,
+//                    60L, TimeUnit.SECONDS,
+//                    new SynchronousQueue<Runnable>());
 
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, IOException {
+
         long startTime=System.currentTimeMillis();   //获取开始时间
+        System.out.println("开始处理数据:"+ LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
 
 
-        String filePath = "/Users/zhoushengqiang/Desktop/dkxy/1000.xlsx";
+        String filePath = "/Users/zhoushengqiang/Desktop/dkxy/"+excelName+".xlsx";
         InputStream fis = null;
         try {
             fis = new FileInputStream(filePath);
@@ -60,13 +68,14 @@ public class ExcelTest {
                 String url =POIUtil.getCellValue(row.getCell(2));
 
                 if(!userId.equals("lUserId")){
-                    if(map.containsKey(userId)){
-                        map.put(userId,map.get(userId)+";"+url);
+                    if(userIdAndUrlsMap.containsKey(userId)&&!"".equals(url)){
+                        userIdAndUrlsMap.put(userId, userIdAndUrlsMap.get(userId)+";"+url);
                     }else {
-                        map.put(userId,url);
+                        if(!"".equals(url)){
+                            userIdAndUrlsMap.put(userId,url);
+                        }
                     }
                 }
-
 
             }
         } catch (FileNotFoundException e) {
@@ -82,25 +91,37 @@ public class ExcelTest {
                 }
             }
         }
-        Iterator<Map.Entry<String, String>> iterator = map.entrySet().iterator();
-        final Map<String,Integer > num=new HashMap<>();
+
+        long readExcelEndTime=System.currentTimeMillis();
+        System.out.println("读取excel,获取url地址共花费:"+(readExcelEndTime-startTime)/1000+"秒");
+
+        mulDownPdf();
+
+        FileDown.writeQingDanList(excelName);
+
+        //获取开始时间
+        long end=System.currentTimeMillis();
+        System.out.println("全部工作,合计耗时:"+(end-startTime)/1000+"秒");
+
+    }
 
 
+    /**
+     * 多线程下载文件,并改名
+     */
+    private static void mulDownPdf() {
+
+        long start=System.currentTimeMillis();
+
+        Iterator<Map.Entry<String, String>> iterator = userIdAndUrlsMap.entrySet().iterator();
         Integer mapNum=0;
 
         while (iterator.hasNext()){
             mapNum++;
             Map.Entry<String, String>  entry= iterator.next();
-            String lUserId = entry.getKey();
             String urls =entry.getValue();
 
-
-//            ExecutorService threadPoolExecutor1 = new ThreadPoolExecutor(10, 10,
-//                    60L, TimeUnit.SECONDS,
-//                    new SynchronousQueue<Runnable>());
-
             threadPoolExecutor.execute(new Runnable() {
-
                 private int number=0;
                 public Runnable setNumber(int name)
                 {
@@ -108,10 +129,8 @@ public class ExcelTest {
                     return this;
                 }
 
-
                 @Override
                 public void run() {
-                    System.out.println(Thread.currentThread().getName());
                     FileDown.downloadFile(urls,"/Users/zhoushengqiang/Desktop/dkxy",number);
                 }
             }.setNumber(mapNum));
@@ -120,19 +139,12 @@ public class ExcelTest {
         threadPoolExecutor.shutdown();
         while(true){
             if(threadPoolExecutor.isTerminated()){
-                //System.out.println("所有的子线程都结束了！");
                 break;
             }
         }
-
-
-     //   mulDownPdf();
-        long endTime=System.currentTimeMillis(); //获取结束时间
-        System.out.println("程序运行时间： "+(endTime-startTime)+"s");
-
-    }
-
-    private static void mulDownPdf() {
+        long end=System.currentTimeMillis();
+        System.out.println("多线程下载耗时:"+(end-start)/1000+"秒");
+        System.out.println("一共处理:"+mapNum+"条");
 
     }
 }
