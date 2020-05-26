@@ -40,7 +40,6 @@ public class GroupChatClient {
         }
 
     }
-m
 
     //读取服务器信息
     public void readInfo(){

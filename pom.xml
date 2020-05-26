@@ -20,6 +20,7 @@
     </parent>
 
     <modules>
+        <module>cloud_basecore</module>
         <module>cloud_eureka</module>
         <module>cloud_eureka_client</module>
         <module>cloud_ribbon</module>

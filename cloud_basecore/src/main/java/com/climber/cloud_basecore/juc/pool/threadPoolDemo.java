@@ -8,6 +8,5 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class threadPoolDemo {
     public static void main(String[] args) {
 
-
     }
 }
