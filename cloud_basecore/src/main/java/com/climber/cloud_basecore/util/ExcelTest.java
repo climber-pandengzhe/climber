@@ -21,10 +21,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelTest {
 
-    public static AtomicInteger rowNo= new AtomicInteger(0);
 
     public static Map<String,String> userIdAndUrlsMap = new HashMap<>();
-    public static String excelName="684454";
+    public static String excelName="1236668";
 
 
     public static ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
@@ -47,6 +46,8 @@ public class ExcelTest {
 
         String filePath = "/Users/zhoushengqiang/Desktop/dkxy/"+excelName+".xlsx";
         InputStream fis = null;
+        long excelNumCount=0;
+        long needDealexcelNumCount=0;
         try {
             fis = new FileInputStream(filePath);
             Workbook workbook = null;
@@ -62,16 +63,20 @@ public class ExcelTest {
             // 获取行
             Iterator<Row> rows = sheet.rowIterator();
             Row row;
+
             while (rows.hasNext()) {
+                excelNumCount++;
                 row = rows.next();
                 String userId =POIUtil.getCellValue(row.getCell(1));
                 String url =POIUtil.getCellValue(row.getCell(2));
 
                 if(!userId.equals("lUserId")){
                     if(userIdAndUrlsMap.containsKey(userId)&&!"".equals(url)){
+                        needDealexcelNumCount++;
                         userIdAndUrlsMap.put(userId, userIdAndUrlsMap.get(userId)+";"+url);
                     }else {
                         if(!"".equals(url)){
+                            needDealexcelNumCount++;
                             userIdAndUrlsMap.put(userId,url);
                         }
                     }
@@ -79,8 +84,12 @@ public class ExcelTest {
 
             }
         } catch (FileNotFoundException e) {
+            System.out.println("---87---");
+
             e.printStackTrace();
         } catch (IOException e) {
+            System.out.println("---91---");
+
             e.printStackTrace();
         } finally {
             if (null != fis) {
@@ -93,7 +102,7 @@ public class ExcelTest {
         }
 
         long readExcelEndTime=System.currentTimeMillis();
-        System.out.println("读取excel,获取url地址共花费:"+(readExcelEndTime-startTime)/1000+"秒");
+        System.out.println("读取excel,获取url地址共花费:"+(readExcelEndTime-startTime)/1000+"秒,共得到"+excelNumCount+"条数据,需要处理的数据有:"+needDealexcelNumCount+",合计存入map中"+userIdAndUrlsMap.size()+"条");
 
         mulDownPdf();
 

@@ -138,8 +138,8 @@ public class FileDown {
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
+			System.out.println("出错的url"+urlError);
 			e.printStackTrace();
-			System.out.println("文件下载失败！");
 		} finally {
 			return file;
 		}
@@ -170,16 +170,16 @@ public class FileDown {
 		}
 		catch(Exception e)
 		{
-			System.out.println(e);
+			System.out.println("dealPdf出错:"+file.getAbsolutePath()+"错误信息e:"+e.getMessage());
+			e.printStackTrace();
 			return "--";
+
 		}
 	}
 
 
-	public  static void writeQingDanList(String shanghuhao) throws IOException {
-
+	public  static void writeQingDanList(String shanghuhao) {
         Iterator<Map.Entry<String, String>> iterator = identityAndNamsMap.entrySet().iterator();
-
         OutputStream outputStream = null;
         SXSSFWorkbook wb = new SXSSFWorkbook();
         try {
@@ -227,6 +227,7 @@ public class FileDown {
             System.out.println("写Excel清单耗时:"+(end-startTime)/1000+"秒");
 
         } catch (Exception e) {
+			System.out.println("---230--");
             e.printStackTrace();
         } finally {
             try {
@@ -237,6 +238,7 @@ public class FileDown {
                     outputStream.close();
                 }
             } catch (IOException e) {
+				System.out.println("======");
                 e.printStackTrace();
             }
         }
@@ -252,8 +254,8 @@ public class FileDown {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// 指定资源地址，下载文件测试
-		//downloadFile("https://dafyossfile.dafy.com/OSS/20190615/150d55e8b9bf489bbcc480f70a30a614.pdf", "/Users/zhoushengqiang/Desktop/dkxy");
+		File file =new File("/Users/zhoushengqiang/Desktop/dkxy/d1eb21dfbd4b4171a89b3dc386bfd07f.pdf");
+		dealPdf(file);
 
 	}
 }
