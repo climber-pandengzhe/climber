@@ -17,6 +17,9 @@ public class SPIClassLoaderTest {
             Driver driver = iterator.next();
             System.out.println("driver:" + driver.getClass()+",loader:"+driver.getClass().getClassLoader());
         }
+        System.out.println("=="+ServiceLoader.class.getClassLoader());
+
+
 
     }
 
